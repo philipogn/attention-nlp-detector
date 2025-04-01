@@ -3,7 +3,7 @@ import numpy as np
 import gc
 import re
 
-def preprocess_text(text):
+def preprocess_text(text): # preprocess function for tfidf
     text = text.lower()
     text = re.sub(r'[\n\r\t]', ' ', text)
     return text
@@ -15,12 +15,12 @@ def select_early_middle_layers(model, num_layers_to_select=4):
     return selected_layers
 
 def get_attention_data(prompt, tokenizer, model):
-    inputs = tokenizer(prompt, return_tensors="pt")#.to("cpu")
+    inputs = tokenizer(prompt, return_tensors="pt")
     outputs = model(**inputs)
     torch.cuda.empty_cache()    # free GPU memory after each prompt
     return outputs.attentions
 
-def get_selected_attention(attentions, model):
+def get_selected_attention_layers(attentions, model):
     layers = select_early_middle_layers(model)
     stacked_attentions = torch.stack(attentions) # stack all attentions into single tensor
     selected_layers = stacked_attentions[layers] # select only the layers required and return
@@ -29,10 +29,10 @@ def get_selected_attention(attentions, model):
 def compute_entropy(attention_tensor):
     entropies = []
     attention_tensor = attention_tensor.squeeze(1)  # remove batch dimension
-    num_layers, num_heads, _, _ = attention_tensor.shape
-    for l in range(num_layers):
-        for h in range(num_heads):
-            head_matrix = attention_tensor[l, h]    # get Q x K matrix for each head
+    selected_num_layers, selected_num_heads, _, _ = attention_tensor.shape # get number of subset of layers and all heads
+    for l in range(selected_num_layers):
+        for h in range(selected_num_heads):
+            head_matrix = attention_tensor[l, h]    # get Q x K matrix for each head  (row x column)
             row_entropies = - (head_matrix * torch.log2(head_matrix + 1e-9)).sum(dim=-1) # compute entropy for each row
             head_entropy = row_entropies.mean() # average entropy across all rows
             entropies.append(head_entropy.item())
@@ -41,22 +41,19 @@ def compute_entropy(attention_tensor):
 def compute_variance(attention_tensor):
     variances = []
     attention_tensor = attention_tensor.squeeze(1)  # remove batch dimension
-    num_layers, num_heads, _, _ = attention_tensor.shape
-    for l in range(num_layers):
-        for h in range(num_heads):
-            head_matrix = attention_tensor[l, h]    # get Q x K matrix for each head
+    selected_num_layers, selected_num_heads, _, _ = attention_tensor.shape # get number of subset of layers and all heads
+    for l in range(selected_num_layers):
+        for h in range(selected_num_heads):
+            head_matrix = attention_tensor[l, h]    # get Q x K matrix for each head (row x column)
             row_variance = torch.var(head_matrix, dim=-1).mean()
             variances.append(row_variance.item()) # average variance across all rows
     return np.mean(variances)
 
 def analyze_prompt(prompt, tokenizer, model):
-    torch.cuda.empty_cache()
-    gc.collect()
-
     attentions = get_attention_data(prompt, tokenizer, model)
-    selected_attention = get_selected_attention(attentions, model)
-    entropy_score = compute_entropy(selected_attention)
-    variance_score = compute_variance(selected_attention)
+    selected_attention_layers = get_selected_attention_layers(attentions, model)
+    entropy_score = compute_entropy(selected_attention_layers)
+    variance_score = compute_variance(selected_attention_layers)
 
     torch.cuda.empty_cache()
     gc.collect()
