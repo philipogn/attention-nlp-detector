@@ -22,9 +22,9 @@ def get_attention_data(prompt, tokenizer, model):
 
 def get_selected_attention_layers(attentions, model):
     layers = select_early_middle_layers(model)
-    stacked_attentions = torch.stack(attentions) # stack all attentions into single tensor
-    selected_layers = stacked_attentions[layers] # select only the layers required and return
-    return selected_layers
+    selected = [attentions[i] for i in layers]  # select only the layers required
+    stacked_selected_layers = torch.stack(selected) # stack all selected into single tensor, much smaller
+    return stacked_selected_layers
 
 def compute_entropy(attention_tensor):
     entropies = []
