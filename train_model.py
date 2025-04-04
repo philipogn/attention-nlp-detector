@@ -7,6 +7,7 @@ from joblib import dump # model save to prevent retraining
 from sklearn import metrics
 from sklearn.linear_model import LogisticRegression
 from sklearn.ensemble import RandomForestClassifier
+from sklearn import svm
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score, classification_report
 from sklearn.feature_extraction.text import TfidfVectorizer
@@ -94,7 +95,6 @@ def log_reg_train(df):
 
     tfidf = TfidfVectorizer()
     X_tfidf = tfidf.fit_transform(df['prompt'])
-
     scaler = StandardScaler()
     df[['entropy', 'variance']] = scaler.fit_transform(df[['entropy', 'variance']])
 
@@ -118,19 +118,51 @@ def log_reg_train(df):
     print("\nClassification Report:\n", classification_report(y_test, y_pred))
     return log_reg, tfidf, scaler
 
+def support_vector_machine(df):
+    df['prompt'] = df['prompt'].apply(preprocess_text)
+
+    tfidf = TfidfVectorizer()
+    X_tfidf = tfidf.fit_transform(df['prompt'])
+    scaler = StandardScaler()
+    df[['entropy', 'variance']] = scaler.fit_transform(df[['entropy', 'variance']])
+
+    X = np.hstack((X_tfidf.toarray(), df[['entropy', 'variance']].values))
+    y = df['label'].values
+
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42)
+    svm_cls = svm.SVC(kernel="linear")
+    svm_cls.fit(X_train, y_train)
+
+    y_pred = svm_cls.predict(X_test)
+    precision = metrics.precision_score(y_test, y_pred)
+    recall = metrics.recall_score(y_test, y_pred)
+    f1 = metrics.f1_score(y_test, y_pred)
+    # metrics results
+    accuracy = accuracy_score(y_test, y_pred)
+    print(f"\nSupport Vector Machine Model Evaluation on predicting test set with {MODEL_NAME}:")
+    print(f"Precision: {precision} | Recall: {recall} | F1 Score: {f1}")
+    print(f"Accuracy: {accuracy:.2f}")
+    print("\nClassification Report:\n", classification_report(y_test, y_pred))
+    return svm_cls, tfidf, scaler
+
 if __name__ == "__main__":
     # load all datasets and process them
     load_df = load_datasets(datasets)
     df = extract_features(load_df)
 
-    rand_forest, rand_tfidf = random_forest_train(df)
-    log_reg, log_tfidf, scaler = log_reg_train(df)
+    # rand_forest, rand_tfidf = random_forest_train(df)
+    # log_reg, log_tfidf, log_scaler = log_reg_train(df)
+    svm_cls, svm_tfidf, svm_scaler = support_vector_machine(df)
     
-    # save random forest model
-    with open(f'{MODEL_NAME}_rand_model.pkl', 'wb') as file:
-        dump((rand_forest, rand_tfidf), file, compress=3) # no scaler required
+    # # save random forest model
+    # with open('rand_model.pkl', 'wb') as file:
+    #     dump((rand_forest, rand_tfidf), file, compress=3) # no scaler required
 
-    # save log reg model
-    with open(f'{MODEL_NAME}_log_model.pkl', 'wb') as file:
-        dump((log_reg, log_tfidf, scaler), file, compress=3)  # Compress to reduce memory usage
+    # # save log reg model
+    # with open('log_model.pkl', 'wb') as file:
+    #     dump((log_reg, log_tfidf, log_scaler), file, compress=3)  # Compress to reduce memory usage
+
+    # save svm model
+    with open('phi_svm_model.pkl', 'wb') as file:
+        dump((svm_cls, svm_tfidf, svm_scaler), file, compress=3)
 
