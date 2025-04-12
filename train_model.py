@@ -1,8 +1,6 @@
 import pandas as pd
 import numpy as np
 import torch
-import re # regular expression
-import gc # garbage collector
 from joblib import dump # model save to prevent retraining
 from sklearn import metrics
 from sklearn.linear_model import LogisticRegression
@@ -16,7 +14,7 @@ from transformers import AutoTokenizer, AutoModelForCausalLM
 
 from utils import preprocess_text, analyze_prompt
 
-datasets = [
+DATASET_TRAIN = [
     "data/train/guychuk_data5000.csv",
     "data/train/harelix_dataset.csv",
     "data/train/GPT_generated_dataset.csv",
@@ -31,7 +29,6 @@ tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME)
 model = AutoModelForCausalLM.from_pretrained(
     MODEL_NAME, output_attentions=True, return_dict_in_generate=True, attn_implementation="eager", device_map="auto"
 )
-# model.to("cpu")
 
 def load_datasets(dataset_paths):
     dataframes = []
@@ -59,13 +56,12 @@ def extract_features(data):
         variance_scores.append(variance_score)
         label = data.loc[data['prompt'] == prompt, 'label'].values[0]
         print(f"{prompt[:30]}...,{label}, Entropy:{entropy_score:.4f}, Variance:{variance_score:.4f}")
-        torch.cuda.empty_cache()
     data["entropy"] = entropy_scores
     data["variance"] = variance_scores
     return data
 
 def random_forest_train(df):
-    df['prompt'] = df['prompt'].apply(preprocess_text)
+    df['prompt'] = df['prompt'].apply(preprocess_text)  # call func from utils to preprocess text
     
     # prepare training data
     tfidf = TfidfVectorizer()
@@ -83,8 +79,7 @@ def random_forest_train(df):
     recall = metrics.recall_score(y_test, y_pred)
     f1 = metrics.f1_score(y_test, y_pred)
     accuracy = accuracy_score(y_test, y_pred)
-    # metrics results
-    print(f"\nRandom Forest Model Evaluation on predicting test set on {MODEL_NAME}:")
+    print(f"\nRandom Forest metrics on predicting test set on {MODEL_NAME}:")
     print(f"Precision: {precision} | Recall: {recall} | F1 Score: {f1}")
     print(f"Accuracy: {accuracy:.2f}")
     print("\nClassification Report:\n", classification_report(y_test, y_pred))
@@ -95,14 +90,14 @@ def log_reg_train(df):
 
     tfidf = TfidfVectorizer()
     X_tfidf = tfidf.fit_transform(df['prompt'])
-    scaler = StandardScaler()
+    scaler = StandardScaler()   # scaler for entropy and variance to standardise
     df[['entropy', 'variance']] = scaler.fit_transform(df[['entropy', 'variance']])
 
     X = np.hstack((X_tfidf.toarray(), df[['entropy', 'variance']].values))
     y = df['label'].values
 
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42)
-    log_reg = LogisticRegression(class_weight='balanced')
+    log_reg = LogisticRegression()
     log_reg.fit(X_train, y_train)
 
     # predictions and metrics
@@ -110,9 +105,8 @@ def log_reg_train(df):
     precision = metrics.precision_score(y_test, y_pred)
     recall = metrics.recall_score(y_test, y_pred)
     f1 = metrics.f1_score(y_test, y_pred)
-    # metrics results
     accuracy = accuracy_score(y_test, y_pred)
-    print(f"\nLogistic Regression Model Evaluation on predicting test set with {MODEL_NAME}:")
+    print(f"\nLogistic Regression metrics on predicting test set with {MODEL_NAME}:")
     print(f"Precision: {precision} | Recall: {recall} | F1 Score: {f1}")
     print(f"Accuracy: {accuracy:.2f}")
     print("\nClassification Report:\n", classification_report(y_test, y_pred))
@@ -123,7 +117,7 @@ def support_vector_machine(df):
 
     tfidf = TfidfVectorizer()
     X_tfidf = tfidf.fit_transform(df['prompt'])
-    scaler = StandardScaler()
+    scaler = StandardScaler()   # scaler for entropy and variance to standardise
     df[['entropy', 'variance']] = scaler.fit_transform(df[['entropy', 'variance']])
 
     X = np.hstack((X_tfidf.toarray(), df[['entropy', 'variance']].values))
@@ -133,13 +127,13 @@ def support_vector_machine(df):
     svm_cls = svm.SVC(kernel="linear")
     svm_cls.fit(X_train, y_train)
 
+    # predictions and metrics
     y_pred = svm_cls.predict(X_test)
     precision = metrics.precision_score(y_test, y_pred)
     recall = metrics.recall_score(y_test, y_pred)
     f1 = metrics.f1_score(y_test, y_pred)
-    # metrics results
     accuracy = accuracy_score(y_test, y_pred)
-    print(f"\nSupport Vector Machine Model Evaluation on predicting test set with {MODEL_NAME}:")
+    print(f"\nSupport Vector Machine metrics on predicting test set with {MODEL_NAME}:")
     print(f"Precision: {precision} | Recall: {recall} | F1 Score: {f1}")
     print(f"Accuracy: {accuracy:.2f}")
     print("\nClassification Report:\n", classification_report(y_test, y_pred))
@@ -147,22 +141,22 @@ def support_vector_machine(df):
 
 if __name__ == "__main__":
     # load all datasets and process them
-    load_df = load_datasets(datasets)
+    load_df = load_datasets(DATASET_TRAIN)
     df = extract_features(load_df)
 
-    # rand_forest, rand_tfidf = random_forest_train(df)
-    # log_reg, log_tfidf, log_scaler = log_reg_train(df)
+    rand_forest, rand_tfidf = random_forest_train(df)
+    log_reg, log_tfidf, log_scaler = log_reg_train(df)
     svm_cls, svm_tfidf, svm_scaler = support_vector_machine(df)
     
     # # save random forest model
-    # with open('rand_model.pkl', 'wb') as file:
+    # with open('randforest_model.pkl', 'wb') as file:
     #     dump((rand_forest, rand_tfidf), file, compress=3) # no scaler required
 
     # # save log reg model
-    # with open('log_model.pkl', 'wb') as file:
+    # with open('logreg_model.pkl', 'wb') as file:
     #     dump((log_reg, log_tfidf, log_scaler), file, compress=3)  # Compress to reduce memory usage
 
-    # save svm model
-    with open('phi_svm_model.pkl', 'wb') as file:
-        dump((svm_cls, svm_tfidf, svm_scaler), file, compress=3)
+    # # save svm model
+    # with open('svm_model.pkl', 'wb') as file:
+    #     dump((svm_cls, svm_tfidf, svm_scaler), file, compress=3)
 
