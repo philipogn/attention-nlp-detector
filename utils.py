@@ -1,7 +1,6 @@
 import torch
 import numpy as np
 import gc
-import re
 
 def get_attention_data(prompt, tokenizer, model):
     device = next(model.parameters()).device  # get model's device

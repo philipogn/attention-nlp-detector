@@ -12,7 +12,7 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.preprocessing import StandardScaler
 from transformers import AutoTokenizer, AutoModelForCausalLM
 
-from utils import preprocess_text, analyze_prompt
+from utils import analyze_prompt
 
 DATASET_TRAIN = [
     "data/train/guychuk_data5000.csv",
@@ -143,22 +143,21 @@ if __name__ == "__main__":
 
     # load all datasets and process them
     load_df = load_datasets(DATASET_TRAIN)
-    load_df['prompt'] = load_df['prompt'].apply(preprocess_text)
     data_extracted = extract_features(load_df, tokenizer, model)
 
     rand_forest, rand_tfidf = random_forest_train(data_extracted, model_name)
     log_reg, log_tfidf, log_scaler = log_reg_train(data_extracted, model_name)
     svm_cls, svm_tfidf, svm_scaler = support_vector_machine(data_extracted, model_name)
     
-    # # save random forest model
-    # with open('randforest_model.pkl', 'wb') as file:
-    #     dump((rand_forest, rand_tfidf), file, compress=3) # no scaler required
+    # save random forest model
+    with open('randforest_model.pkl', 'wb') as file:
+        dump((rand_forest, rand_tfidf), file, compress=3) # no scaler required
 
     # save log reg model
     with open('logreg_model.pkl', 'wb') as file:
         dump((log_reg, log_tfidf, log_scaler), file, compress=3)  # Compress to reduce memory usage
 
-    # # save svm model
-    # with open('svm_model.pkl', 'wb') as file:
-    #     dump((svm_cls, svm_tfidf, svm_scaler), file, compress=3)
+    # save svm model
+    with open('svm_model.pkl', 'wb') as file:
+        dump((svm_cls, svm_tfidf, svm_scaler), file, compress=3)
 
