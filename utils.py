@@ -9,7 +9,7 @@ def preprocess_text(text): # preprocess function for tfidf
 
 def get_attention_data(prompt, tokenizer, model):
     device = next(model.parameters()).device  # get model's device
-    inputs = tokenizer(prompt, return_tensors="pt")
+    inputs = tokenizer(prompt, return_tensors="pt") # inputs returned as tensor
     inputs = {k: v.to(device) for k, v in inputs.items()}  # move inputs to model's device
     with torch.no_grad():   # no gradient needed, saves memory
         outputs = model(**inputs)

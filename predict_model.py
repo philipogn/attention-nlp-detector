@@ -41,7 +41,7 @@ def load_datasets(dataset_paths):
 
 def predict_prompt_logreg(prompts, saved_model_name, tokenizer, model):
     predictions = []
-    with open(f'saved_models/{saved_model_name}_log_model.pkl', 'rb') as file:
+    with open(f'saved_models/{saved_model_name}_logreg_model.pkl', 'rb') as file:
         loaded_model, loaded_tfidf, loaded_scaler = load(file)
 
     for prompt in prompts:
@@ -69,7 +69,7 @@ def predict_prompt_svm(prompts, saved_model_name, tokenizer, model):
 
 def predict_prompt_randforest(prompts, saved_model_name, tokenizer, model):
     predictions = []
-    with open(f'saved_models/{saved_model_name}_rand_model.pkl', 'rb') as file:
+    with open(f'saved_models/{saved_model_name}_randforest_model.pkl', 'rb') as file:
         loaded_model, loaded_tfidf = load(file)
 
     for prompt in prompts:
@@ -88,9 +88,8 @@ def evaluation_metrics(true_labels, predicted_labels, model_name, classifier_typ
     accuracy = accuracy_score(true_labels, predicted_labels)
     
     print(f"\nPredicting on unseen data with {model_name} ({classifier_type})")
-    print(f"Precision: {precision_unseen} | Recall: {recall_unseen} | F1: {f1_unseen}")
-    print(f"Model Accuracy: {accuracy:.4f}")
-    print("Classification Report: ", classification_report(true_labels, predicted_labels))
+    print(f"Precision: {precision_unseen:.2f} | Recall: {recall_unseen:.2f} | F1: {f1_unseen:.2f} | Accuracy: {accuracy:.2f}")
+    print("Classification Report:\n", classification_report(true_labels, predicted_labels))
 
 
 if __name__ == "__main__":

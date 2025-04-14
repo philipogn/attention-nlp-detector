@@ -42,6 +42,7 @@ def load_datasets(dataset_paths):
             print(f"Error loading {path}: {e}")
     if not dataframes:
         raise ValueError("No valid datasets found!")
+    print(f"Loaded {len(dataframes)} datasets.")
     
     return pd.concat(dataframes, ignore_index=True)
 
@@ -53,7 +54,7 @@ def extract_features(data, tokenizer, model):
         entropy_scores.append(entropy_score)
         variance_scores.append(variance_score)
         label = data.loc[data['prompt'] == prompt, 'label'].values[0]
-        print(f"{prompt[:30]}...,{label}, Entropy:{entropy_score:.4f}, Variance:{variance_score:.4f}")
+        print(f"{prompt[:30]}... | Label: {label} | Entropy: {entropy_score:.4f} | Variance: {variance_score:.4f}")
     data["entropy"] = entropy_scores
     data["variance"] = variance_scores
     return data
@@ -76,9 +77,8 @@ def random_forest_train(df, model_name):
     f1 = metrics.f1_score(y_test, y_pred)
     accuracy = accuracy_score(y_test, y_pred)
     print(f"\nRandom Forest metrics on predicting test set on {model_name}:")
-    print(f"Precision: {precision} | Recall: {recall} | F1 Score: {f1}")
-    print(f"Accuracy: {accuracy:.2f}")
-    print("\nClassification Report:\n", classification_report(y_test, y_pred))
+    print(f"Precision: {precision:.2f} | Recall: {recall:.2f} | F1: {f1:.2f} | Accuracy: {accuracy:.2f}")
+    print("Classification Report:\n", classification_report(y_test, y_pred))
     return rand_forest, tfidf
 
 def log_reg_train(df, model_name):
@@ -101,9 +101,8 @@ def log_reg_train(df, model_name):
     f1 = metrics.f1_score(y_test, y_pred)
     accuracy = accuracy_score(y_test, y_pred)
     print(f"\nLogistic Regression metrics on predicting test set with {model_name}:")
-    print(f"Precision: {precision} | Recall: {recall} | F1 Score: {f1}")
-    print(f"Accuracy: {accuracy:.2f}")
-    print("\nClassification Report:\n", classification_report(y_test, y_pred))
+    print(f"Precision: {precision:.2f} | Recall: {recall:.2f} | F1: {f1:.2f} | Accuracy: {accuracy:.2f}")
+    print("Classification Report:\n", classification_report(y_test, y_pred))
     return log_reg, tfidf, scaler
 
 def support_vector_machine(df, model_name):
@@ -126,9 +125,8 @@ def support_vector_machine(df, model_name):
     f1 = metrics.f1_score(y_test, y_pred)
     accuracy = accuracy_score(y_test, y_pred)
     print(f"\nSupport Vector Machine metrics on predicting test set with {model_name}:")
-    print(f"Precision: {precision} | Recall: {recall} | F1 Score: {f1}")
-    print(f"Accuracy: {accuracy:.2f}")
-    print("\nClassification Report:\n", classification_report(y_test, y_pred))
+    print(f"Precision: {precision:.2f} | Recall: {recall:.2f} | F1: {f1:.2f} | Accuracy: {accuracy:.2f}")
+    print("Classification Report:\n", classification_report(y_test, y_pred))
     return svm_cls, tfidf, scaler
 
 if __name__ == "__main__":
@@ -156,9 +154,9 @@ if __name__ == "__main__":
     # with open('randforest_model.pkl', 'wb') as file:
     #     dump((rand_forest, rand_tfidf), file, compress=3) # no scaler required
 
-    # # save log reg model
-    # with open('logreg_model.pkl', 'wb') as file:
-    #     dump((log_reg, log_tfidf, log_scaler), file, compress=3)  # Compress to reduce memory usage
+    # save log reg model
+    with open('logreg_model.pkl', 'wb') as file:
+        dump((log_reg, log_tfidf, log_scaler), file, compress=3)  # Compress to reduce memory usage
 
     # # save svm model
     # with open('svm_model.pkl', 'wb') as file:
