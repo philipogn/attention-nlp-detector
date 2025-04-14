@@ -61,7 +61,7 @@ def extract_features(data, tokenizer, model):
 
 def random_forest_train(df, model_name):    
     # prepare training data
-    tfidf = TfidfVectorizer()
+    tfidf = TfidfVectorizer(lowercase=True)
     X_tfidf = tfidf.fit_transform(df['prompt'])
     X = np.hstack((X_tfidf.toarray(), df[['entropy', 'variance']].values))
     y = df['label'].values
@@ -82,7 +82,7 @@ def random_forest_train(df, model_name):
     return rand_forest, tfidf
 
 def log_reg_train(df, model_name):
-    tfidf = TfidfVectorizer()
+    tfidf = TfidfVectorizer(lowercase=True)
     X_tfidf = tfidf.fit_transform(df['prompt'])
     scaler = StandardScaler()   # scaler for entropy and variance to standardise
     df[['entropy', 'variance']] = scaler.fit_transform(df[['entropy', 'variance']])
@@ -106,7 +106,7 @@ def log_reg_train(df, model_name):
     return log_reg, tfidf, scaler
 
 def support_vector_machine(df, model_name):
-    tfidf = TfidfVectorizer()
+    tfidf = TfidfVectorizer(lowercase=True)
     X_tfidf = tfidf.fit_transform(df['prompt'])
     scaler = StandardScaler()   # scaler for entropy and variance to standardise
     df[['entropy', 'variance']] = scaler.fit_transform(df[['entropy', 'variance']])

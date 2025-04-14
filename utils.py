@@ -3,10 +3,6 @@ import numpy as np
 import gc
 import re
 
-def preprocess_text(text): # preprocess function for tfidf
-    text = text.lower()
-    return text
-
 def get_attention_data(prompt, tokenizer, model):
     device = next(model.parameters()).device  # get model's device
     inputs = tokenizer(prompt, return_tensors="pt") # inputs returned as tensor
