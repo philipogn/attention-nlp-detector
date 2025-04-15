@@ -9,7 +9,7 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from utils import analyze_prompt
 
 DATASET_TEST = [
-    "data/test/deepset_test.csv",
+    # "data/test/deepset_test.csv",
     # "data/test/promptshield_dataset.csv",
     # "data/test/jackhhao_jailbreak_dataset.csv",
     # "data/test/wild_awesome_gen_test.csv",
