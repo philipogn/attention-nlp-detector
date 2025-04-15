@@ -2,6 +2,7 @@ import pandas as pd
 import numpy as np
 import seaborn as sns
 import matplotlib.pyplot as plt
+from joblib import load
 from transformers import AutoTokenizer, AutoModelForCausalLM
 from sklearn.decomposition import PCA
 from sklearn.feature_extraction.text import TfidfVectorizer
@@ -10,9 +11,9 @@ from utils import analyze_prompt
 
 DATASET_TEST = [
     # "data/test/deepset_test.csv",
-    # "data/test/promptshield_dataset.csv",
-    # "data/test/jackhhao_jailbreak_dataset.csv",
-    # "data/test/wild_awesome_gen_test.csv",
+    "data/test/promptshield_dataset.csv",
+    "data/test/jackhhao_jailbreak_dataset.csv",
+    "data/test/wild_awesome_gen_test.csv",
     "data/test/qualifire_test.csv"
 ]
 
@@ -119,9 +120,11 @@ def print_variance_line_graph(stats, model_name):
     plt.savefig("variance_graph.png", dpi=300, bbox_inches='tight')
     plt.show()
 
-def pca_tfidf(df):
-    tfidf = TfidfVectorizer()
-    X_tfidf = tfidf.fit_transform(df['prompt'])
+def pca_tfidf(df, saved_model_name):
+    with open(f'saved_models/{saved_model_name}_svm_model.pkl', 'rb') as file:
+        _, loaded_tfidf, _ = load(file)
+
+    X_tfidf = loaded_tfidf.transform(df['prompt'])
 
     pca = PCA(n_components=2)
     pca_result = pca.fit_transform(X_tfidf.toarray())
@@ -163,7 +166,7 @@ if __name__ == "__main__":
 
     df = load_datasets(DATASET_TEST)
     # df = alternate_labels(df)
-    pca_tfidf(df)
+    pca_tfidf(df, selected_model)
     
     stats = compute_prompt_stats(df, tokenizer, model)
     
