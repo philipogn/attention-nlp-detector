@@ -33,16 +33,16 @@ def predict_prompt(prompt, classifier_type, model_alias, tokenizer, model):
         raise FileNotFoundError(f"Model file {model_file} not found.")
 
     with open(model_file, 'rb') as file:
-        if classifier_type == "randforest":
-            loaded_model, tfidf = load(file)
+        if classifier_type == "randforest": 
+            loaded_model, loaded_tfidf = load(file) # no scaler needed
             entropy, variance = analyze_prompt(prompt, tokenizer, model)
-            tfidf_features = tfidf.transform([prompt]).toarray()
+            tfidf_features = loaded_tfidf.transform([prompt]).toarray()
             features = np.hstack((tfidf_features, np.array([[entropy, variance]])))
         else:
-            loaded_model, tfidf, scaler = load(file)
+            loaded_model, loaded_tfidf, loaded_scaler = load(file)
             entropy, variance = analyze_prompt(prompt, tokenizer, model)
-            tfidf_features = tfidf.transform([prompt]).toarray()
-            scaled = scaler.transform(pd.DataFrame([[entropy, variance]], columns=['entropy', 'variance']))
+            tfidf_features = loaded_tfidf.transform([prompt]).toarray()
+            scaled = loaded_scaler.transform(pd.DataFrame([[entropy, variance]], columns=['entropy', 'variance']))
             features = np.hstack((tfidf_features, scaled))
 
     prediction = loaded_model.predict(features)[0]
