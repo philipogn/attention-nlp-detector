@@ -5,7 +5,6 @@ import matplotlib.pyplot as plt
 from joblib import load
 from transformers import AutoTokenizer, AutoModelForCausalLM
 from sklearn.decomposition import PCA
-from sklearn.feature_extraction.text import TfidfVectorizer
 
 from utils import analyze_prompt
 
@@ -144,14 +143,6 @@ def pca_tfidf(df, saved_model_name):
     plt.savefig("pca_tfidf.png", dpi=300, bbox_inches='tight')
     plt.show()
 
-def distribution_plot(stats):
-    sns.histplot(stats['entropy_score_0'], label='Benign', kde=True)
-    sns.histplot(stats['entropy_score_1'], label='Malicious', kde=True)
-    plt.legend()
-    plt.title("Entropy Distribution")
-    plt.show()
-
-
 if __name__ == "__main__":
     selected_model = "llama"  # change to load saved language models: llama, qwen, phi
 
@@ -172,4 +163,3 @@ if __name__ == "__main__":
     
     print_entropy_line_graph(stats, model_name)
     print_variance_line_graph(stats, model_name)
-    # distribution_plot(stats)

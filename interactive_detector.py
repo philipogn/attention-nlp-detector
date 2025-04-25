@@ -81,7 +81,7 @@ def run_cli():
 
     # prompt input
     while True:
-        prompt = input("\nEnter your prompt:\n> ").strip()
+        prompt = input("\nEnter your prompt:\n> ")
         if not prompt:
             print("Cannot be empty, please enter a prompt.")
             continue
@@ -101,7 +101,6 @@ def run_cli():
         print(f"Entropy Score: {entropy:.4f}, Variance Score: {variance:.4f}")
     except Exception as e:
         print(f"Error during prediction: {e}")
-
 
 if __name__ == "__main__":
     run_cli()
