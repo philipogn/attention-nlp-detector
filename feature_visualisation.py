@@ -8,11 +8,16 @@ from sklearn.decomposition import PCA
 
 from utils import analyze_prompt
 
+MODEL_OPTIONS = {
+    "llama": "meta-llama/Llama-3.2-1B",
+    "qwen": "Qwen/Qwen2.5-1.5B-Instruct",
+    "phi": "microsoft/Phi-3-mini-128k-instruct"
+}
+
 DATASET_TEST = [
-    # "data/test/deepset_test.csv",
     "data/test/promptshield_dataset.csv",
     "data/test/jackhhao_jailbreak_dataset.csv",
-    "data/test/wild_awesome_gen_test.csv",
+    "data/test/curated_test.csv",
     "data/test/qualifire_test.csv"
 ]
 
@@ -23,7 +28,7 @@ DATASET_TRAIN = [
     "data/train/deepset_train.csv"
 ]
 
-def alternate_labels(df): # alternate for better visualisation on dataset
+def alternate_labels(df): # alternate for better visualisation on dataset (for curated_dataset.csv)
     df0 = df[df['label'] == 0].sample(frac=1, random_state=72).reset_index(drop=True)
     df1 = df[df['label'] == 1].sample(frac=1, random_state=72).reset_index(drop=True)
     min_count = min(len(df0), len(df1)) # use the minimum count to ensure balanced groups (in case counts differ)
@@ -146,13 +151,7 @@ def pca_tfidf(df, saved_model_name):
 if __name__ == "__main__":
     selected_model = "llama"  # change to load saved language models: llama, qwen, phi
 
-    model_options = {
-        "llama": "meta-llama/Llama-3.2-1B",
-        "qwen": "Qwen/Qwen2.5-1.5B-Instruct",
-        "phi": "microsoft/Phi-3-mini-128k-instruct"
-    }
-
-    model_name = model_options[selected_model]
+    model_name = MODEL_OPTIONS[selected_model]
     tokenizer, model = load_model_and_tokenizer(model_name)
 
     df = load_datasets(DATASET_TEST)

@@ -14,6 +14,12 @@ from transformers import AutoTokenizer, AutoModelForCausalLM
 
 from utils import analyze_prompt
 
+MODEL_OPTIONS = {
+    "llama": "meta-llama/Llama-3.2-1B",
+    "qwen": "Qwen/Qwen2.5-1.5B-Instruct",
+    "phi": "microsoft/Phi-3-mini-128k-instruct"
+}
+
 DATASET_TRAIN = [
     "data/train/guychuk_data5000.csv",
     "data/train/harelix_dataset.csv",
@@ -132,13 +138,7 @@ def support_vector_machine(df, model_name):
 if __name__ == "__main__":
     selected_model = "llama"  # change to load saved language models: llama, qwen, phi
 
-    model_options = {
-        "llama": "meta-llama/Llama-3.2-1B",
-        "qwen": "Qwen/Qwen2.5-1.5B-Instruct",
-        "phi": "microsoft/Phi-3-mini-128k-instruct"
-    }
-
-    model_name = model_options[selected_model]
+    model_name = MODEL_OPTIONS[selected_model]
     tokenizer, model = load_model_and_tokenizer(model_name)
 
     # load all datasets and process them
