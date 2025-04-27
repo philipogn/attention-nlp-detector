@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 from joblib import load
 from transformers import AutoTokenizer, AutoModelForCausalLM
 from sklearn.decomposition import PCA
+import umap
 
 from utils import analyze_prompt
 
@@ -127,16 +128,15 @@ def print_variance_line_graph(stats, model_name):
 def pca_tfidf(df, saved_model_name):
     with open(f'saved_models/{saved_model_name}_svm_model.pkl', 'rb') as file:
         _, loaded_tfidf, _ = load(file)
-
     X_tfidf = loaded_tfidf.transform(df['prompt'])
 
-    pca = PCA(n_components=2)
+    pca = PCA(n_components=2, random_state=42)  # reproducible results
     pca_result = pca.fit_transform(X_tfidf.toarray())
 
     unique_labels = df['label'].unique()
     colors = ['blue', 'red']
 
-    plt.figure(figsize=(12, 8))
+    plt.figure(figsize=(10, 8))
     for label, color in zip(unique_labels, colors):
         indices = df['label'] == label  # get the indices where the label matches
         plt.scatter(pca_result[indices, 0], pca_result[indices, 1], c=color, s=10, label=label, alpha=0.9)
@@ -148,6 +148,29 @@ def pca_tfidf(df, saved_model_name):
     plt.savefig("pca_tfidf.png", dpi=300, bbox_inches='tight')
     plt.show()
 
+def umap_tfidf(df, saved_model_name):
+    with open(f'saved_models/{saved_model_name}_svm_model.pkl', 'rb') as file:
+        _, loaded_tfidf, _ = load(file)
+    X_tfidf = loaded_tfidf.transform(df['prompt'])
+
+    reducer = umap.UMAP(n_components=2, random_state=42, metric='cosine') # cosine distance and random state for reproducibility
+    umap_result = reducer.fit_transform(X_tfidf, y=df['label'])  # supervised by label
+
+    unique_labels = df['label'].unique()
+    colors = ['blue', 'red']
+
+    plt.figure(figsize=(10, 8))
+    for label, color in zip(unique_labels, colors):
+        indices = df['label'] == label
+        plt.scatter(umap_result[indices, 0], umap_result[indices, 1], c=color, s=10, label=label, alpha=0.9)
+    plt.title('UMAP of TF-IDF Matrix')
+    plt.xlabel('UMAP Dimension 1')
+    plt.ylabel('UMAP Dimension 2')
+    plt.grid(True, linestyle='--', alpha=0.5)
+    plt.legend(title="Labels", fontsize=10)
+    plt.savefig("umap_tfidf.png", dpi=300, bbox_inches='tight')
+    plt.show()
+
 if __name__ == "__main__":
     selected_model = "llama"  # change to load saved language models: llama, qwen, phi
 
@@ -157,6 +180,7 @@ if __name__ == "__main__":
     df = load_datasets(DATASET_TEST)
     # df = alternate_labels(df)
     pca_tfidf(df, selected_model)
+    umap_tfidf(df, selected_model)
     
     stats = compute_prompt_stats(df, tokenizer, model)
     

@@ -19,7 +19,7 @@ CLASSIFIER_OPTIONS = { # saved classifier options
 }
 
 def load_model(model_name):
-    print(f"Loading tokenizer and model for {model_name}...")
+    print(f"\nLoading tokenizer and model for {model_name}...")
     tokenizer = AutoTokenizer.from_pretrained(model_name)
     model = AutoModelForCausalLM.from_pretrained(
         model_name, output_attentions=True, return_dict_in_generate=True, attn_implementation="eager", device_map="auto"
@@ -79,28 +79,29 @@ def run_cli():
             break
     classifier_type = CLASSIFIER_OPTIONS[classifier_choice]
 
+    tokenizer, model = load_model(model_name)
+
     # prompt input
     while True:
-        prompt = input("\nEnter your prompt:\n> ")
+        prompt = input("\nEnter your prompt (Enter 'exit' to quit):\n> ")
         if not prompt:
             print("Cannot be empty, please enter a prompt.")
             continue
-        else:
+        elif prompt.lower() == "exit":
+            print("Exiting CLI.")
             break
-
-    tokenizer, model = load_model(model_name)
-
-    print("\nAnalysing prompt...\n")
-    try:
-        prediction, entropy, variance = predict_prompt(prompt, classifier_type, model_alias, tokenizer, model)
-        if prediction == 1:
-            label_str = "MALICIOUS PROMPT DETECTED"
         else:
-            label_str = "Benign prompt detected"
-        print(f"Prediction: {label_str}")
-        print(f"Entropy Score: {entropy:.4f}, Variance Score: {variance:.4f}")
-    except Exception as e:
-        print(f"Error during prediction: {e}")
+            print("\nAnalysing prompt...\n")
+            try:
+                prediction, entropy, variance = predict_prompt(prompt, classifier_type, model_alias, tokenizer, model)
+                if prediction == 1:
+                    label_str = "MALICIOUS PROMPT DETECTED"
+                else:
+                    label_str = "Benign prompt detected"
+                print(f"Prediction: {label_str}")
+                print(f"Entropy Score: {entropy:.4f}, Variance Score: {variance:.4f}")
+            except Exception as e:
+                print(f"Error during prediction: {e}")
 
 if __name__ == "__main__":
     run_cli()
