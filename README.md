@@ -18,7 +18,11 @@ huggingface-cli login
 ```
 
 # How to install and run
-1. Clone the repository
+1. Clone the repository and enter the directory:
+```sh
+git clone https://github.com/philipogn/attention-nlp-detector.git
+cd attention-nlp-detector
+```
 2. Install the required dependencies by running the command:
 ```sh
 pip install -r requirements.txt
