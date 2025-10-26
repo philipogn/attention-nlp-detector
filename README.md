@@ -1,6 +1,10 @@
-# attention-nlp-detector
+# Attention-Based & TF-IDF Prompt Injection Detection for Large Language Models
 
-# How to install and run
+A machine learning pipeline to predict prompt injection attacks using statistical features of entropy, variance, TF-IDF extracted from open source LLM attention weights. The best model using LLaMa 3.2 1B + Support Vector Machine achieves 71% detection accuracy on unseen data, outperforming two other detection tools tested.
+
+New prompts can be predicted by running the `interactive_model.py` with information below
+
+## How to install and run
 1. Clone the repository and enter the directory:
 ```sh
 git clone https://github.com/philipogn/attention-nlp-detector.git
