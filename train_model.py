@@ -55,7 +55,7 @@ def load_datasets(dataset_paths):
 def extract_features(data, tokenizer, model):
     entropy_scores = []
     variance_scores = []
-    for prompt in data['prompt']:
+    for prompt in data['prompt'][:100]:
         entropy_score, variance_score = analyze_prompt(prompt, tokenizer, model)
         entropy_scores.append(entropy_score)
         variance_scores.append(variance_score)
@@ -63,6 +63,7 @@ def extract_features(data, tokenizer, model):
         print(f"{prompt[:30]}... | Label: {label} | Entropy: {entropy_score:.4f} | Variance: {variance_score:.4f}")
     data["entropy"] = entropy_scores
     data["variance"] = variance_scores
+    data.to_csv('features.csv')
     return data
 
 def random_forest_train(df, model_name):    
@@ -136,7 +137,7 @@ def support_vector_machine(df, model_name):
     return svm_cls, tfidf, scaler
 
 if __name__ == "__main__":
-    selected_model = "llama"  # change to load saved language models: llama, qwen, phi
+    selected_model = "qwen"  # change to load saved language models: llama, qwen, phi
 
     model_name = MODEL_OPTIONS[selected_model]
     tokenizer, model = load_model_and_tokenizer(model_name)
@@ -150,14 +151,14 @@ if __name__ == "__main__":
     svm_cls, svm_tfidf, svm_scaler = support_vector_machine(data_extracted, model_name)
     
     # save random forest model
-    with open('randforest_model.pkl', 'wb') as file:
-        dump((rand_forest, rand_tfidf), file, compress=3) # no scaler required
+    # with open('randforest_model.pkl', 'wb') as file:
+    #     dump((rand_forest, rand_tfidf), file, compress=3) # no scaler required
 
-    # save log reg model
-    with open('logreg_model.pkl', 'wb') as file:
-        dump((log_reg, log_tfidf, log_scaler), file, compress=3)  # Compress to reduce memory usage
+    # # save log reg model
+    # with open('logreg_model.pkl', 'wb') as file:
+    #     dump((log_reg, log_tfidf, log_scaler), file, compress=3)  # Compress to reduce memory usage
 
-    # save svm model
-    with open('svm_model.pkl', 'wb') as file:
-        dump((svm_cls, svm_tfidf, svm_scaler), file, compress=3)
+    # # save svm model
+    # with open('svm_model.pkl', 'wb') as file:
+    #     dump((svm_cls, svm_tfidf, svm_scaler), file, compress=3)
 
