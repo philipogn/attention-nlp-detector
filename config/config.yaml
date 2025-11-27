@@ -16,7 +16,7 @@ language_model:
   qwen: "Qwen/Qwen2.5-1.5B-Instruct"
   phi: "microsoft/Phi-3-mini-128k-instruct"
 
-language_model_parameter:
+language_model_parameters:
   output_attentions: True
   return_dict_in_generate: True
   attn_implementation: "eager"
