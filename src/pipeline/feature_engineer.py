@@ -7,7 +7,7 @@ from utils import analyze_prompt
 class FeatureEngineer():
     def __init__(self, config):
         self.config = config
-        self.model_name = config['language_model']['llama']
+        self.model_name = config['language_model']['qwen']
         self.train_set = config['data']['train_dataset']
         self.train_df = None
         self.tokenizer = None
@@ -64,6 +64,7 @@ class FeatureEngineer():
     def run(self):
         self.load_model_and_tokenizer()
         self.load_datasets()
+        self.extract_features()
         self.feature_to_csv()
 
 
