@@ -2,7 +2,7 @@
 
 A machine learning pipeline to predict prompt injection attacks using statistical features of entropy, variance, TF-IDF extracted from open source LLM attention weights. The best model using LLaMa 3.2 1B + Support Vector Machine achieves 71% detection accuracy on unseen data, outperforming two other detection tools tested.
 
-New prompts can be predicted by running the `interactive_model.py` with information below
+New prompts can be predicted by running the `cli_detector.py` with information below
 
 ## How to install and run
 1. Clone the repository and enter the directory:
@@ -16,7 +16,7 @@ pip install -r requirements.txt
 ```
 3. The main detector file can then be run from the root directory of the repository with:
 ```sh
-python interactive_detector.py
+python entrypoint/cli_detector.py
 ```
 Running this allows you to select the language model and the classification model to test a prompt on the trained detectors. 
 The LLaMa 3.2 1B model requires access token detailed below

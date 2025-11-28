@@ -9,7 +9,7 @@ data:
     - data/1-raw/test/promptshield_dataset.csv
     - data/1-raw/test/jackhhao_jailbreak_dataset.csv
     - data/1-raw/test/curated_test.csv
-    - data/1-raw/test/qualifire.csv
+    - data/1-raw/test/qualifire_test.csv
 
   train_features: "data/2-features/qwen_trainset_features.csv"
   test_features: "data/2-features/??"

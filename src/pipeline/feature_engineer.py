@@ -8,8 +8,8 @@ from ..utils import analyze_prompt
 class FeatureEngineer():
     def __init__(self, config):
         self.config = config
-        self.model_name = config['language_model']['qwen']
-        self.train_set = config['data']['train_dataset']
+        self.model_name = config['language_model']['llama']
+        self.train_set = config['data']['test_dataset']
         self.train_df = None
         self.tokenizer = None
         self.model = None
@@ -46,7 +46,7 @@ class FeatureEngineer():
     def extract_features(self):
         entropy_scores = []
         variance_scores = []
-        pbar = tqdm(self.train_df['prompt'], desc='Extracting features')
+        pbar = tqdm.tqdm(self.train_df['prompt'], desc='Extracting features')
         for prompt in pbar:
             entropy_score, variance_score = analyze_prompt(prompt, self.tokenizer, self.model)
             entropy_scores.append(entropy_score)
@@ -65,7 +65,7 @@ class FeatureEngineer():
         if self.train_df is None:
             print('Failed to save features')
         else:
-            self.train_df.to_csv('data/2-features/train_set_features.csv', index=False)
+            self.train_df.to_csv('data/2-features/test_set_features.csv', index=False)
 
     def run(self):
         self.load_model_and_tokenizer()
