@@ -10,6 +10,8 @@ data:
     - data/test/jackhhao_jailbreak_dataset.csv
     - data/test/curated_test.csv
     - data/test/qualifire.csv
+  
+  train_features: "data/2-features/qwen_trainset_features.csv"
 
 language_model:
   llama: "meta-llama/Llama-3.2-1B"
